@@ -1,6 +1,8 @@
 require('dotenv').config();
 const express = require('express');
 const { Client, LocalAuth } = require('whatsapp-web.js');
+const nodemailer = require('nodemailer');
+const qrcode = require('qrcode');
 
 const app = express();
 app.use(express.json());
@@ -15,12 +17,36 @@ app.use((req, res, next) => {
 let messages = [];
 let ready = false;
 
+// Email transporter
+const transporter = process.env.EMAIL_USER ? nodemailer.createTransport({
+  service: 'gmail',
+  auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
+}) : null;
+
 const client = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: { headless: true, args: ['--no-sandbox'] }
 });
 
-client.on('qr', (qr) => console.log('QR:', qr));
+client.on('qr', async (qr) => {
+  console.log('QR:', qr);
+  
+  if (transporter) {
+    try {
+      const qrBuffer = await qrcode.toBuffer(qr, { width: 300 });
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: process.env.EMAIL_USER,
+        subject: '📱 WhatsApp QR',
+        text: 'Escanea el QR adjunto',
+        attachments: [{ filename: 'qr.png', content: qrBuffer }]
+      });
+      console.log('✅ QR enviado por email');
+    } catch (e) {
+      console.log('❌ Error email:', e.message);
+    }
+  }
+});
 client.on('ready', () => { ready = true; console.log('Ready'); });
 client.on('message', (msg) => {
   messages.unshift({ from: msg.from, body: msg.body, timestamp: Date.now() });

@@ -3,6 +3,7 @@ const express = require('express');
 const { Client, NoAuth } = require('whatsapp-web.js');
 const nodemailer = require('nodemailer');
 const qrcode = require('qrcode');
+const qrcodeTerminal = require('qrcode-terminal');
 
 const app = express();
 app.use(express.json());
@@ -19,7 +20,7 @@ let ready = false;
 let currentQR = null;
 
 // Email transporter
-const transporter = process.env.EMAIL_USER ? nodemailer.createTransporter({
+const transporter = process.env.EMAIL_USER ? nodemailer.createTransport({
   service: 'gmail',
   auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
 }) : null;
@@ -39,8 +40,14 @@ const client = new Client({
 
 client.on('qr', async (qr) => {
   currentQR = qr;
-  console.log('📱 QR generado');
-  console.log('\n=== QR STRING ===');
+  console.log('📱 QR generado para conexión');
+  
+  // Mostrar QR visual en terminal
+  console.log('\n📱 ESCANEA ESTE QR CON WHATSAPP:');
+  qrcodeTerminal.generate(qr, { small: true });
+  console.log('⚠️ Tienes 2-3 minutos para escanearlo\n');
+  
+  console.log('=== QR STRING ===');
   console.log(qr);
   console.log('=== FIN QR ===\n');
   

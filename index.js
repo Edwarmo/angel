@@ -29,9 +29,13 @@ const client = new Client({
   puppeteer: { headless: true, args: ['--no-sandbox'] }
 });
 
+let currentQR = null;
+
 client.on('qr', async (qr) => {
   if (!qrGenerated) {
+    currentQR = qr;
     console.log('📱 QR generado para conexión inicial');
+    console.log('QR String:', qr);
     
     if (transporter) {
       try {
@@ -67,6 +71,13 @@ client.on('message', (msg) => {
 
 app.get('/status', (req, res) => res.json({ ready, messages: messages.length }));
 app.get('/messages', (req, res) => res.json({ messages }));
+app.get('/qr', (req, res) => {
+  if (currentQR) {
+    res.json({ qr: currentQR });
+  } else {
+    res.json({ error: 'QR no disponible' });
+  }
+});
 app.post('/send', async (req, res) => {
   const { number, message } = req.body;
   if (!ready || !number || !message) return res.status(400).json({ error: 'Invalid' });

@@ -17,6 +17,7 @@ app.use((req, res, next) => {
 let messages = [];
 let ready = false;
 let qrGenerated = false;
+let lastQrTime = 0;
 
 // Email transporter
 const transporter = process.env.EMAIL_USER ? nodemailer.createTransport({
@@ -32,10 +33,15 @@ const client = new Client({
 let currentQR = null;
 
 client.on('qr', async (qr) => {
-  if (!qrGenerated) {
+  const now = Date.now();
+  
+  if (!qrGenerated && (now - lastQrTime) > 30000) {
     currentQR = qr;
+    lastQrTime = now;
     console.log('📱 QR generado para conexión inicial');
-    console.log('QR String:', qr);
+    console.log('\n=== QR STRING ===');
+    console.log(qr);
+    console.log('=== FIN QR ===\n');
     
     if (transporter) {
       try {
@@ -53,6 +59,8 @@ client.on('qr', async (qr) => {
       }
     }
     qrGenerated = true;
+  } else if ((now - lastQrTime) <= 30000) {
+    console.log('⏱️ QR throttled - esperando 30s');
   }
 });
 client.on('ready', () => { 

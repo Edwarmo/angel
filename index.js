@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const { Client, LocalAuth } = require('whatsapp-web.js');
+const { Client, NoAuth } = require('whatsapp-web.js');
 const nodemailer = require('nodemailer');
 const qrcode = require('qrcode');
 
@@ -26,8 +26,19 @@ const transporter = process.env.EMAIL_USER ? nodemailer.createTransport({
 }) : null;
 
 const client = new Client({
-  authStrategy: new LocalAuth(),
-  puppeteer: { headless: true, args: ['--no-sandbox'] }
+  authStrategy: new NoAuth(),
+  puppeteer: { 
+    headless: true, 
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--disable-gpu'
+    ]
+  }
 });
 
 let currentQR = null;

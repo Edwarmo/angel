@@ -1,6 +1,6 @@
 const qrcode = require('qrcode');
 
-const qrString = '2@wugXf2aLQrOVIxyEJN/EBhCFRAwi9NxmZZSHTNYqtR2pKf2oIylAT9s0UCvTG4N5wsl5c66G0HHWAp9Y3B9wQyGvSIu1medxf98=,cHIEXTsf8mFviEu1H4tTRWNBwod8QIW3MwVokIT7a0c=,OAUtS/hyqZhAnNxYr2/KIKn8urK5e1OtSAVUky31M0o=,rp8SGaRamyGsE9oP943TDXRrc6upFMtspFTdv4ffF24=,1"';
+const qrString = '2@KS10tVAlkbd780S6rQaypMwp9Q74WrYv6MycPxOtxXmYKYclc16LE8v4l8yl0y0ilg1y+PIBgcUDf8riSen8gTnABQM+Sz5MhVk=,FZNY1chCuuLUQd7jxmvwK7yiQcxbdHyOl90ferp68Ug=,eBT+vPRbhxSI9NhHOeLjJyTU6FsmJa7ba3n53ObV8yg=,Txg8c32s57aZFkKtJMu7Qfua1suV9oE1Mhrfkk5nhAE=,1';
 
 qrcode.toFile('whatsapp-qr.png', qrString, { width: 300 }, (err) => {
   if (err) {

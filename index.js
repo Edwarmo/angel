@@ -16,6 +16,7 @@ app.use((req, res, next) => {
 
 let messages = [];
 let ready = false;
+let qrSent = false;
 
 // Email transporter
 const transporter = process.env.EMAIL_USER ? nodemailer.createTransport({
@@ -31,23 +32,34 @@ const client = new Client({
 client.on('qr', async (qr) => {
   console.log('QR:', qr);
   
-  if (transporter) {
+  if (transporter && !qrSent) {
     try {
       const qrBuffer = await qrcode.toBuffer(qr, { width: 300 });
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: process.env.EMAIL_USER,
-        subject: '📱 WhatsApp QR',
-        text: 'Escanea el QR adjunto',
+        subject: '📱 WhatsApp QR - Reconexión',
+        text: 'Bot desconectado. Escanea el QR adjunto para reconectar.',
         attachments: [{ filename: 'qr.png', content: qrBuffer }]
       });
+      qrSent = true;
       console.log('✅ QR enviado por email');
     } catch (e) {
       console.log('❌ Error email:', e.message);
     }
   }
 });
-client.on('ready', () => { ready = true; console.log('Ready'); });
+client.on('ready', () => { 
+  ready = true; 
+  qrSent = false;
+  console.log('Ready'); 
+});
+
+client.on('disconnected', (reason) => {
+  ready = false;
+  qrSent = false;
+  console.log('Disconnected:', reason);
+});
 client.on('message', (msg) => {
   messages.unshift({ from: msg.from, body: msg.body, timestamp: Date.now() });
   if (messages.length > 50) messages.pop();
